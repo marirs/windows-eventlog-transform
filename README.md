@@ -1,5 +1,6 @@
 Transform Windows Event Log XML
 --------------------------------
+[![Build Status](https://travis-ci.com/marirs/windows-eventlog-transform.svg?branch=main)](https://travis-ci.com/marirs/windows-eventlog-transform)
 
 Transform Windows Event Log XML files or strings into JSON
 
