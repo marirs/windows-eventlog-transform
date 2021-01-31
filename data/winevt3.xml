@@ -1,0 +1,22 @@
+<Event xmlns="http://schemas.microsoft.com/win/2004/08/events/event">
+ <System>
+    <Provider Name="SecurityCenter" />
+    <EventID Qualifiers="0">15</EventID>
+    <Version>0</Version>
+    <Level>4</Level>
+    <Task>0</Task>
+    <Opcode>0</Opcode>
+    <Keywords>0x80000000000000</Keywords>
+    <TimeCreated SystemTime="2021-01-29T12:47:21.5836771Z" />
+    <EventRecordID>7814</EventRecordID>
+    <Correlation />
+    <Execution ProcessID="0" ThreadID="0" />
+    <Channel>Application</Channel>
+    <Computer>DESKTOP-G089JUF</Computer>
+    <Security />
+</System>
+<EventData>
+    <Data>Windows Defender</Data>
+    <Data>SECURITY_PRODUCT_STATE_ON</Data>
+</EventData>
+</Event>

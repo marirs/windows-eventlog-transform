@@ -1,0 +1,47 @@
+[package]
+name = "winevents_xml_transform"
+version = "0.0.1"
+authors = ["Marirs <marirs@gmail.com>"]
+description = "Transform windows event logs xmls to json"
+categories = ["parsing"]
+exclude = [
+    "data",
+    "examples",
+    ".gitignore",
+    ".travis.yml"
+]
+readme = "README.md"
+license-file = "LICENSE"
+keywords = [
+    "eventlog", "windows", "xml", "cef", "json"
+]
+repository = "https://github.com/marirs/windows-eventlog-transform"
+homepage = "https://github.com/marirs/windows-eventlog-transform"
+edition = "2018"
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_derive = "1"
+serde_with = "1"
+quick-xml = { version = "0.20", features = ["serialize"] }
+
+[dev-dependencies]
+serde_json = "1.0.61"
+
+[lib]
+name = "winevents_xml_transform"
+path = "src/lib.rs"
+
+[badges]
+travis-ci = { repository = "marirs/windows-eventlog-transform" }
+
+
+[profile.dev]
+opt-level = 3
+
+[profile.release]
+codegen-units = 1
+debug-assertions = false
+debug = false
+opt-level = 3
+lto = true

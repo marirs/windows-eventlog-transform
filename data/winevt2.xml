@@ -1,0 +1,22 @@
+<Event xmlns="http://schemas.microsoft.com/win/2004/08/events/event">
+    <System>
+    <Provider Name="BTHUSB" />
+    <EventID Qualifiers="16389">18</EventID>
+    <Version>0</Version>
+    <Level>4</Level>
+    <Task>0</Task>
+    <Opcode>0</Opcode>
+    <Keywords>0x80000000000000</Keywords>
+    <TimeCreated SystemTime="2021-01-29T12:37:19.5374683Z" />
+    <EventRecordID>5662</EventRecordID>
+    <Correlation />
+    <Execution ProcessID="4" ThreadID="1240" />
+    <Channel>System</Channel>
+    <Computer>DESKTOP-G089JUF</Computer>
+    <Security />
+</System>
+    <EventData>
+    <Data />
+    <Binary>00000800010000000000000012000540000000000000000000000000000000000000000000000000E000000000000000</Binary>
+</EventData>
+</Event>
