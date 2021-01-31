@@ -1,0 +1,26 @@
+<Event xmlns="http://schemas.microsoft.com/win/2004/08/events/event">
+<System>
+    <Provider Name="Microsoft-Windows-Eventlog" Guid="{fc65ddd8-d6ef-4962-83d5-6e5cfe9ce148}" />
+    <EventID>104</EventID>
+    <Version>0</Version>
+    <Level>4</Level>
+    <Task>104</Task>
+    <Opcode>0</Opcode>
+    <Keywords>0x8000000000000000</Keywords>
+    <TimeCreated SystemTime="2021-01-31T14:47:42.9503097Z" />
+    <EventRecordID>5732</EventRecordID>
+    <Correlation />
+    <Execution ProcessID="1068" ThreadID="42036" />
+    <Channel>System</Channel>
+    <Computer>DESKTOP-G089JUF</Computer>
+    <Security UserID="S-1-5-21-2274364705-1504883198-1398631079-1001" />
+</System>
+<UserData>
+<LogFileCleared xmlns="http://manifests.microsoft.com/win/2004/08/windows/eventlog">
+    <SubjectUserName>sgp</SubjectUserName>
+    <SubjectDomainName>DESKTOP-G089JUF</SubjectDomainName>
+    <Channel>Microsoft-Windows-Windows Defender/Operational</Channel>
+    <BackupPath />
+</LogFileCleared>
+</UserData>
+</Event>

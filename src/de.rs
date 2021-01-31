@@ -1,6 +1,7 @@
 #![allow(non_snake_case)]
 use serde::{Deserialize, Deserializer, Serialize};
 use serde_with::skip_serializing_none;
+use serde_json::{json, Value};
 
 use std::collections::HashMap;
 
@@ -13,6 +14,39 @@ use crate::{
         tasks::tasks_map,
     },
 };
+
+#[skip_serializing_none]
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct Event {
+    pub xmlns: String,
+    pub System: System,
+    pub EventData: Option<EventData>,
+    pub UserData: Option<HashMap<String, HashMap<String, String>>>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct System {
+    pub Provider: Option<Provider>,
+    pub EventRecordID: usize,
+    #[serde(alias = "EventID", deserialize_with = "eventid_map")]
+    pub Event: EventInfo,
+    #[serde(deserialize_with = "level_map")]
+    pub Level: String,
+    #[serde(deserialize_with = "tasks_map")]
+    pub Task: String,
+    #[serde(deserialize_with = "opcode_map")]
+    pub Opcode: String,
+    #[serde(deserialize_with = "keywords_map")]
+    pub Keywords: String,
+    #[serde(deserialize_with = "flatten_time_created")]
+    pub TimeCreated: String,
+    pub Correlation: Correlation,
+    pub Execution: Execution,
+    pub Channel: String,
+    pub Computer: String,
+    pub Security: Option<Security>,
+    pub Version: usize,
+}
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Provider {
@@ -48,75 +82,63 @@ pub struct Security {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct System {
-    pub Provider: Option<Provider>,
-    #[serde(alias = "EventID", deserialize_with = "eventid_map")]
-    pub Event: EventInfo,
-    pub Version: usize,
-    #[serde(deserialize_with = "level_map")]
-    pub Level: String,
-    #[serde(deserialize_with = "tasks_map")]
-    pub Task: String,
-    #[serde(deserialize_with = "opcode_map")]
-    pub Opcode: String,
-    #[serde(deserialize_with = "keywords_map")]
-    pub Keywords: String,
-    pub TimeCreated: TimeCreated,
-    pub EventRecordID: usize,
-    pub Correlation: Correlation,
-    pub Execution: Execution,
-    pub Channel: String,
-    pub Computer: String,
-    pub Security: Option<Security>,
+#[serde(untagged)]
+pub enum Data {
+    KV {
+        Name: String,
+        #[serde(default, rename = "$value")]
+        Value: Option<String>,
+    },
+    V {
+        #[serde(default, rename = "$value")]
+        Value: Option<String>,
+    },
 }
 
-#[skip_serializing_none]
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct UserData {
-    pub CbsPackageChangeState: Option<CbsPackageChangeState>,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct CbsPackageChangeState {
-    pub PackageIdentifier: String,
-    pub IntendedPackageState: usize,
-    pub IntendedPackageStateTextized: String,
-    pub ErrorCode: String,
-    pub Client: String,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct Data {
-    Name: String,
-    #[serde(rename = "$value")]
-    Value: Option<String>,
-}
 
 #[skip_serializing_none]
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct EventData {
-    pub Data: Option<Vec<Data>>,
+    #[serde(default, deserialize_with = "eventdata_map")]
+    pub Data: Value,
     pub Binary: Option<String>,
 }
 
-fn EventData_to_HashMap<'de, D>(
-    deserializer: D,
-) -> Result<Option<HashMap<String, Option<String>>>, D::Error>
+fn eventdata_map<'de, D>(deserializer: D) -> Result<Value, D::Error>
     where
         D: Deserializer<'de>,
 {
-    EventData::deserialize(deserializer).map(|x| {
-        x.Data
-            .map(|mut x| x.drain(..).map(|x| (x.Name, x.Value)).collect())
+    Option::<Vec<Data>>::deserialize(deserializer).map(|o| {
+        if let Some(evd) = o {
+            let mut m = HashMap::new();
+            let mut v = Vec::new();
+
+            for d in evd {
+                match d {
+                    Data::KV { Name, Value } => {
+                        m.insert(Name, Value);
+                    }
+                    Data::V { Value } => {
+                        v.push(Value);
+                    }
+                }
+            }
+
+            match (m.is_empty(), v.is_empty()) {
+                (true, true) => Default::default(),
+                (true, false) => json!(v),
+                (false, true) => json!(m),
+                (false, false) => json!([m, v]),
+            }
+        } else {
+            Default::default()
+        }
     })
 }
 
-#[skip_serializing_none]
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct Event {
-    pub xmlns: String,
-    pub System: System,
-    #[serde(default, deserialize_with = "EventData_to_HashMap")]
-    pub EventData: Option<HashMap<String, Option<String>>>,
-    pub UserData: Option<UserData>,
+fn flatten_time_created<'de, D>(deserializer: D) -> Result<String, D::Error>
+    where
+        D: Deserializer<'de>,
+{
+    TimeCreated::deserialize(deserializer).map(|x| x.SystemTime)
 }

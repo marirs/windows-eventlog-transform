@@ -21,6 +21,7 @@ edition = "2018"
 
 [dependencies]
 serde = { version = "1", features = ["derive"] }
+serde_json = { version = "1", features = ["preserve_order"] }
 serde_derive = "1"
 serde_with = "1"
 quick-xml = { version = "0.20", features = ["serialize"] }

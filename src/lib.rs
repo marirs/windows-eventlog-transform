@@ -79,15 +79,7 @@ pub fn from_string(xml_string: String) -> Result<Event, String> {
 mod tests {
     use super::{from_file, from_string};
 
-    #[test]
-    fn test_from_file() {
-        let e = from_file("data/winevt1.xml");
-        assert!(e.is_ok());
-    }
-
-    #[test]
-    fn test_from_xml_string() {
-        let xml_string = r#"<?xml version="1.0" encoding="utf-8"?>
+    const XML_STRING: &str = r#"<?xml version="1.0" encoding="utf-8"?>
         <Event xmlns="http://schemas.microsoft.com/win/2004/08/events/event">
             <System>
                 <Provider Name="Microsoft-Windows-Security-Auditing" Guid="{54849625-5478-4994-a5ba-3e3b0328c30d}" />
@@ -111,7 +103,31 @@ mod tests {
                 <Data Name="SubjectDomainName">WORKGROUP</Data>
             </EventData>
         </Event>"#;
-        let e = from_string(xml_string.to_string());
+
+    #[test]
+    fn test_from_file() {
+        let e = from_file("data/winevt1.xml");
         assert!(e.is_ok());
+    }
+
+    #[test]
+    fn test_from_xml_string() {
+        let e = from_string(XML_STRING.to_string());
+        assert!(e.is_ok());
+    }
+
+    #[test]
+    fn test_time_created_flatten() {
+        let e = from_string(XML_STRING.to_string());
+        let tc = e.unwrap();
+        let tc = tc.System.TimeCreated;
+        assert_eq!(tc, "2021-01-26T11:17:29.4856969Z")
+    }
+
+    #[test]
+    fn test_xmlns() {
+        let e = from_string(XML_STRING.to_string());
+        let xmlns = e.unwrap();
+        assert_eq!(xmlns.xmlns, "http://schemas.microsoft.com/win/2004/08/events/event")
     }
 }
