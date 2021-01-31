@@ -116,8 +116,7 @@ fn EventData_to_HashMap<'de, D>(
 pub struct Event {
     pub xmlns: String,
     pub System: System,
-    #[serde(default)]
-    #[serde(deserialize_with = "EventData_to_HashMap")]
+    #[serde(default, deserialize_with = "EventData_to_HashMap")]
     pub EventData: Option<HashMap<String, Option<String>>>,
     pub UserData: Option<UserData>,
 }
