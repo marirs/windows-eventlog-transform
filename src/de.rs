@@ -70,9 +70,10 @@ pub struct System {
     pub Security: Option<Security>,
 }
 
+#[skip_serializing_none]
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct UserData {
-    pub CbsPackageChangeState: CbsPackageChangeState,
+    pub CbsPackageChangeState: Option<CbsPackageChangeState>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -96,7 +97,6 @@ pub struct Data {
 pub struct EventData {
     pub Data: Option<Vec<Data>>,
     pub Binary: Option<String>,
-    pub UserData: Option<UserData>,
 }
 
 fn EventData_to_HashMap<'de, D>(
@@ -111,10 +111,13 @@ fn EventData_to_HashMap<'de, D>(
     })
 }
 
+#[skip_serializing_none]
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Event {
     pub xmlns: String,
     pub System: System,
+    #[serde(default)]
     #[serde(deserialize_with = "EventData_to_HashMap")]
     pub EventData: Option<HashMap<String, Option<String>>>,
+    pub UserData: Option<UserData>,
 }
