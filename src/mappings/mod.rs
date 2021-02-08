@@ -7,8 +7,12 @@ pub(crate) mod opcode;
 #[allow(dead_code)]
 pub(crate) mod tasks;
 
-/// Common function to convert mapping data i
-pub(crate) fn get_map(text_str: &str, line_break: char, string_break: char) -> HashMap<usize, String> {
+/// Common function to convert mapping data into Hashmap
+pub(crate) fn get_map(
+    text_str: &str,
+    line_break: char, string_break: char,
+    (key_index, val_index): (usize, usize)
+) -> HashMap<usize, String> {
     text_str
         .trim()
         .split(line_break)
@@ -22,8 +26,8 @@ pub(crate) fn get_map(text_str: &str, line_break: char, string_break: char) -> H
                 .map(|x| x.to_string())
                 .collect::<Vec<String>>();
             (
-                components[1].clone().parse::<usize>().unwrap(),
-                components[2].clone(),
+                components[key_index].clone().parse::<usize>().unwrap(),
+                components[val_index].clone(),
             )
         })
         .collect()

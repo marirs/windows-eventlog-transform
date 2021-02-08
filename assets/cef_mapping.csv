@@ -1,0 +1,121 @@
+act,deviceAction,Device Action
+app,applicationProtocol,Application Protocol
+c6a1,deviceCustomIPv6Address1,Device Custom IPv6 Address 1
+c6a1Label,deviceCustomIPv6Address1Label,Device Custom IPv6 Address 1 Label
+c6a2,deviceCustomIPv6Address2,Device Custom IPv6 Address 2
+c6a2Label,deviceCustomIPv6Address2Label,Device Custom IPv6 Address 2 Label
+c6a3,deviceCustomIPv6Address3,Device Custom IPv6 Address 3
+c6a3Label,deviceCustomIPv6Address3Label,Device Custom IPv6 Address 3 Label
+c6a4,deviceCustomIPv6Address4,Device Custom IPv6 Address 4
+c6a4Label,deviceCustomIPv6Address4Label,Device Custom IPv6 Address 4 Label
+cfp1,deviceCustomFloatingPoint1,Device Custom Floating Point 1
+cfp1Label,deviceCustomFloatingPoint1Label,Device Custom Floating Point 1 Label
+cfp2,deviceCustomFloatingPoint2,Device Custom Floating Point 2
+cfp2Label,deviceCustomFloatingPoint2Label,Device Custom Floating Point 2 Label
+cfp3,deviceCustomFloatingPoint3,Device Custom Floating Point 3
+cfp3Label,deviceCustomFloatingPoint3Label,Device Custom Floating Point 3 Label
+cfp4,deviceCustomFloatingPoint4,Device Custom Floating Point 4
+cfp4Label,deviceCustomFloatingPoint4Label,Device Custom Floating Point 4 Label
+cat,deviceEventCategory,Device Event Category
+cn1,deviceCustomNumber1,Device Custom Number 1
+cn1Label,deviceCustomNumber1Label,Device Custom Number 1 Label
+cn2,deviceCustomNumber2,Device Custom Number 2
+cn2Label,deviceCustomNumber2Label,Device Custom Number 2 Label
+cn3,deviceCustomNumber3,Device Custom Number 3
+cn3Label,deviceCustomNumber3Label,Device Custom Number 3 Label
+cnt,baseEventCount,Base Event Count
+cs1,deviceCustomString1,Device Custom String 1
+cs1Label,deviceCustomString1Label,Device Custom String 1 Label
+cs2,deviceCustomString2,Device Custom String 2
+cs2Label,deviceCustomString2Label,Device Custom String 2 Label
+cs3,deviceCustomString3,Device Custom String 3
+cs3Label,deviceCustomString3Label,Device Custom String 3 Label
+cs4,deviceCustomString4,Device Custom String 4
+cs4Label,deviceCustomString4Label,Device Custom String 4 Label
+cs5,deviceCustomString5,Device Custom String 5
+cs5Label,deviceCustomString5Label,Device Custom String 5 Label
+cs6,deviceCustomString6,Device Custom String 6
+cs6Label,deviceCustomString6Label,Device Custom String 6 Label
+destinationDnsDomain,destinationDnsDomain,Destination Dns Domain
+destinationServiceName,destinationServiceName,Destination Service Name
+destinationTranslatedAddress,destinationTranslatedAddress,Destination Translated Address
+destinationTranslatedPort,destinationTranslatedPort,Destination Translated Port
+deviceCustomDate1,deviceCustomDate1,Device Custom Date 1
+deviceCustomDate1Label,deviceCustomDate1Label,Device Custom Date 1 Label
+deviceCustomDate2,deviceCustomDate2,Device Custom Date 2
+deviceCustomDate2Label,deviceCustomDate2Label,Device Custom Date 2 Label
+deviceCustomDate3,deviceCustomDate3,Device Custom Date 3
+deviceCustomDate3Label,deviceCustomDate3Label,Device Custom Date 3 Label
+deviceDirection,deviceDirection,Device Direction
+deviceDnsDomain,deviceDnsDomain,Device Dns Domain
+deviceExternalId,deviceExternalId,Device External ID
+deviceFacility,deviceFacility,Device Facility
+deviceInboundInterface,deviceInboundInterface,Device Inbound Interface
+deviceMacAddress,deviceMacAddress,Device Mac Address
+deviceNtDomain,deviceNtDomain,Device NT Domain
+deviceOutboundInterface,deviceOutboundInterface,Device Outbound Interface
+deviceProcessName,deviceProcessName,Device Process Name
+deviceTranslatedAddress,deviceTranslatedAddress,Device Translated Address
+dhost,destinationHostName,Destination Host Name
+dmac,destinationMac,Destination Mac
+dntdom,destinationNtDomain,Destination NT Domain
+dpid,destinationProcessId,Destination Process ID
+dpriv,destinationUserPrivileges,destinationUserPrivileges
+dproc,destinationProcessName,Destination Process Name
+dpt,destinationPort,Destination Port
+dst,destinationAddress,Destination Address
+duid,destinationUserId,Destination User ID
+duser,destinationUserName,Destination User Name
+dvc,deviceAddress,Device Address
+dvchost,deviceHostName,Device Host Name
+dvcpid,deviceProcessId,Device Process ID
+end,endTime,End Time
+externalId,externalId,External ID
+fileCreateTime,fileCreateTime,File Create Time
+fileHash,fileHash,File Hash
+fileId,fileId,File ID
+fileModificationTime,fileModificationTime,File Modification Time
+filePath,filePath,File Path
+filePermission,filePermission,File Permission
+fileType,fileType,File Type
+fd1,flexDate1,Flex Date 1
+fd1Label,flexDate1Label,Flex Date 1 Label
+fs1,flexString1,Flex String 1
+fs1Label,flexString1Label,Flex String 1 Label
+fs2,flexString2,Flex String 2
+fs2Label,flexString2Label,Flex String 2 Label
+fname,fileName,File Name
+fsize,fileSize,File Size
+in,bytesIn,Bytes In
+msg,message,Message
+oldFileCreateTime,oldFileCreateTime,Old File Create Time
+oldFileHash,oldFileHash,Old File Hash
+oldFileId,oldFileId,Old File ID
+oldFileModificationTime,oldFileModificationTime,Old File Modification Time
+oldFileName,oldFileName,Old File Name
+oldFilePath,oldFilePath,Old File Path
+oldFilePermission,oldFilePermission,Old File Permission
+oldFileSize,oldFileSize,Old File Sze
+oldFileType,oldFileType,Old File Type
+out,bytesOut,Bytes Out
+proto,transportProtocol,Transport Protocol
+reason,reason,Reason
+requestClientApplication,requestClientApplication,Request Client Application
+requestCookies,requestCookies,Request Cookies
+requestMethod,requestMethod,Request Method
+request,requestURL,Request URL
+rt,receiptTime,Receipt Time
+shost,sourceHostName,Source Host Name
+smac,sourceMacAddress,Source Mac Address
+sntdom,sourceNtDomain,Source NT Domain
+sourceDnsDomain,sourceDnsDomain,Source DNS Domain
+sourceServiceName,sourceServiceName,Source Service Name
+sourceTranslatedAddress,sourceTranslatedAddress,Source Translated Address
+sourceTranslatedPort,sourceTranslatedPort,Source Translated Port
+spid,sourceProcessId,Source Process ID
+spriv,sourceUserPrivileges,Source User Privileges
+spt,sourcePort,Source Port
+src,sourceAddress,Source Address
+start,startTime,Start Time
+suid,sourceUserId,Source User ID
+suser,sourceUserName,Source User Name

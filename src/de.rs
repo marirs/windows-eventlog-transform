@@ -123,6 +123,12 @@ fn eventdata_map<'de, D>(deserializer: D) -> Result<Value, D::Error>
                     }
                 }
             }
+            // remove null from vec
+            let v = v
+                .iter()
+                .filter(|a|!a.as_ref().is_none())
+                .map(|a|a.as_ref().unwrap().to_string())
+                .collect::<Vec<String>>();
 
             match (m.is_empty(), v.is_empty()) {
                 (true, true) => Default::default(),

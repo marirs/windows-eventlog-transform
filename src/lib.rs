@@ -3,6 +3,8 @@ use de::Event;
 
 mod mappings;
 
+mod cef;
+
 use quick_xml::de::from_str;
 
 use std::{
@@ -73,6 +75,10 @@ pub fn from_string(xml_string: String) -> Result<Event, String> {
     };
 
     Ok(result)
+}
+
+pub trait ToCEF {
+    fn to_cef(&self) -> String;
 }
 
 #[cfg(test)]
