@@ -258,7 +258,7 @@ pub(crate) fn event_mappings(event_id: usize, event_data: EventData) -> String {
             )
         },
         4621 => {
-            format!("cn2Label=CrashOnAuditFail cn2={} msg={}",
+            format!("cn2Label=CrashOnAuditFail cn2Label=CrashOnAuditFail cn2={} msg={}",
                 event_data.get("CrashOnAuditFail").unwrap_or(&EMPTY_STRING),
                 "This event is logged after a system reboots following CarshOnAuditFail."
             )
@@ -267,6 +267,34 @@ pub(crate) fn event_mappings(event_id: usize, event_data: EventData) -> String {
             format!("{}={}",
                 get_cef_key_for("File Path"),
                 event_data.get("SecurityPackageName").unwrap_or(&EMPTY_STRING)
+            )
+        },
+        4624 => {
+            let device_nt_domain = get_device_nt_domain_from_SubjectDomainName(event_data.clone());
+            let src_address = get_key_val_for(
+                "Source Address", "IpAddress", event_data.clone()
+            );
+            let dest_proc_name = get_key_val_for(
+                "Destination Process Name", "ProcessName", event_data.clone()
+            );
+
+            let src_hostname_key = get_cef_key_for("Source Host Name");
+            let src_hostname_val = one_of!(
+                event_data.get("IpAddress").unwrap_or(&EMPTY_STRING).to_string(),
+                "localhost".to_string()
+            );
+
+            // TODO: device custom string & additional data & Device Custom IPv6 Address 2
+            format!(
+                "msg={} cs3Label=TargetOutboundUserName cs3={} cs4Label=TargetOutboundDomainName cs4={} \
+                {}={} {}={} {}={} {}={}",
+                "This event is generated when a logon session is created. It is generated on the computer that was accessed.",
+                event_data.get("TargetOutboundUserName").unwrap_or(&EMPTY_STRING),
+                event_data.get("TargetOutboundDomainName").unwrap_or(&EMPTY_STRING),
+                device_nt_domain.key, device_nt_domain.val,
+                src_address.key, src_address.val,
+                dest_proc_name.key, dest_proc_name.val,
+                src_hostname_key, src_hostname_val,
             )
         },
         _ => "".to_string()
