@@ -4,6 +4,8 @@ mod properties;
 mod parse;
 mod cef_map;
 
+use chrono::DateTime;
+
 use serde_json::to_string;
 
 use crate::{Event, mappings, ToCEF};
@@ -32,6 +34,12 @@ impl ToCEF for Event {
             name=system.Event.EventName,
             sev=mappings::levels::from_string_to_usize(system.Level)
         );
+        let start = DateTime::parse_from_rfc3339(system.TimeCreated.as_str());
+        let start = if let Ok(e) = start {
+            e.timestamp().to_string()
+        } else {
+            system.TimeCreated.to_string()
+        };
 
         // Start & Build the CEF extension
         let cef_extension = format!(
@@ -40,7 +48,7 @@ impl ToCEF for Event {
             cn1Label=EventRecordId cn1={record_id} \
             cs1Label=Opcode cs1={opcode} \
             cs2Label=Keywords cs2={keywords}",
-            start=system.TimeCreated,
+            start=start,
             event_id=system.Event.EventID,
             record_id=system.EventRecordID,
             opcode=system.Opcode,

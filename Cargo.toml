@@ -23,6 +23,7 @@ homepage = "https://github.com/marirs/windows-eventlog-transform"
 edition = "2018"
 
 [dependencies]
+chrono = "0.4.19"
 convert_case = "0.4.0"
 serde = { version = "1", features = ["derive"] }
 serde_json = { version = "1", features = ["preserve_order"] }
