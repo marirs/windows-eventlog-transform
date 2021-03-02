@@ -1,19 +1,16 @@
 #![allow(non_snake_case)]
-use serde::{Deserialize, Deserializer, Serialize};
-use serde_with::skip_serializing_none;
-use serde_json::{json, Value};
 
 use std::collections::HashMap;
 
-use crate::{
-    mappings::{
-        levels::level_map,
-        keywords::keywords_map,
-        events::eventid_map,
-        opcode::opcode_map,
-        tasks::tasks_map,
-    },
-};
+use serde::{Deserialize, Deserializer, Serialize};
+use serde_json::{json, Value};
+use serde_with::skip_serializing_none;
+
+use crate::cef::mappers::event_name::eventid_map;
+use crate::cef::mappers::keywords::keywords_map;
+use crate::cef::mappers::levels::level_map;
+use crate::cef::mappers::opcode::opcode_map;
+use crate::cef::mappers::tasks::tasks_map;
 
 #[skip_serializing_none]
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -52,6 +49,7 @@ pub struct System {
 pub struct Provider {
     pub Name: Option<String>,
     pub Guid: Option<String>,
+    pub EventSourceName: Option<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]

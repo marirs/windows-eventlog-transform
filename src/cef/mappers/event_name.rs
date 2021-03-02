@@ -1,17 +1,15 @@
 use serde::{Deserialize, Deserializer};
-use std::collections::HashMap;
 
 use crate::{
     de::EventInfo,
-    mappings::get_map
+    cef::mappers::*,
 };
 
-fn get_event_mapping(event_id: usize) -> String {
-    let events = include_str!("../../assets/events.csv").trim();
-    let events_map: HashMap<usize, String> = get_map(events, '\n', ',', (0, 1));
+fn get_event_name_mapping(event_id: usize) -> String {
+    let map = load_mapping();
 
-    if let Some(event_name) = events_map.get(&event_id) {
-       event_name.to_string()
+    if let Some(name) = map.get_name(&event_id) {
+       name.to_string()
     } else {
         format!("EventID-{}", event_id)
     }
@@ -25,7 +23,7 @@ pub(crate) fn eventid_map<'de, D>(deserializer: D) -> Result<EventInfo, D::Error
         // i used a match, you can use a HashMap with lazy_static
         EventInfo {
             EventID: x,
-            EventName: get_event_mapping(x),
+            EventName: get_event_name_mapping(x),
         }
     })
 }
@@ -36,9 +34,9 @@ mod tests {
 
     #[test]
     fn test_events_map() {
-        let evt = get_event_mapping(4781);
-        assert_eq!(evt, "The name of an account was changed");
-        let evt = get_event_mapping(1);
+        let evt = get_event_name_mapping(4781);
+        assert_eq!(evt, "The name of an account was changed:");
+        let evt = get_event_name_mapping(1);
         assert_eq!(evt, "EventID-1")
     }
 }

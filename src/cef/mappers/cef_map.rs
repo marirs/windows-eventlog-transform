@@ -1,10 +1,11 @@
 use std::collections::HashMap;
 
-#[allow(dead_code)]
+use convert_case::{Case, Casing};
+
 pub(crate) struct CefMap {
-    pub(crate)  map: HashMap<String, Vec<String>>,
+    pub(crate) map: HashMap<String, Vec<String>>,
     // Reciprocal of `map`
-    pub(crate)  inverted_map: HashMap<String, String>,
+    pub(crate) inverted_map: HashMap<String, String>,
 }
 
 impl CefMap {
@@ -41,29 +42,48 @@ impl CefMap {
         inv_map
     }
 
-    pub(crate)  fn from_mapping(text: &str) -> Self {
+    pub(crate) fn load_cef_map() -> Self {
         //! Load the given CEF Mapping CSV String
         //!
         //! ## Example usage
         //! ```ignore
-        //! let cef_map = CefMap::from_mapping(include_str!("../../assets/cef_mapping.csv"));
+        //! let cef_map = CefMap::load_cef_map();
         //! ```
-        let text = text.trim();
+        let text = include_str!("../../../assets/cef_mapping.csv").trim();
         let map = Self::populate_map(text.to_string());
         let inverted_map = Self::populate_inverted_map(&map);
         Self { map, inverted_map }
     }
 
-    pub(crate)  fn get_cef_field_for(&self, field: &str) -> Option<String> {
+    pub(crate) fn get_cef_field(&self, field: &str) -> Option<String> {
         //! Get the CEF field name by passing any corresponding field value
         //!
         //! ## Example usage
         //! ```ignore
-        //! let cef_map = CefMap::from_mapping(include_str!("../../assets/cef_mapping.csv"));
+        //! let cef_map = CefMap::load_cef_map();
         //! let cef_field_name = cef_map.get_cef_field_for("deviceAction");
         //! ```
         let inverted_hash = Self::get_cef_value_hash(field.to_string());
         self.inverted_map.get(&inverted_hash).map(|x| x.to_string())
+    }
+
+    pub(crate) fn get_cef_field_or_default(&self, field: &str) -> String {
+        //! Get the CEF field name by passing any corresponding field value
+        //!
+        //! ## Example usage
+        //! ```ignore
+        //! let cef_map = CefMap::get_cef_field_or_default();
+        //! let cef_field_name = cef_map.get_cef_field_for("deviceAction");
+        //! ```
+        let inverted_hash = Self::get_cef_value_hash(field.to_string());
+        if let Some(f) = self.inverted_map.get(&inverted_hash).map(|x| x.to_string()) {
+            // send back the matched cef field
+            f
+        } else {
+            // If cef field not found,
+            // send back the field converted to camel case
+            field.to_case(Case::Camel)
+        }
     }
 }
 
@@ -73,16 +93,19 @@ mod tests {
 
     #[test]
     fn test_get_cef_field_for() {
-        let cef_map = CefMap::from_mapping(include_str!("../../assets/cef_mapping.csv"));
-        let cef_field_name = cef_map.get_cef_field_for("deviceAction");
+        let cef_map = CefMap::load_cef_map();
+        let cef_field_name = cef_map.get_cef_field("deviceAction");
         let expected = Some(String::from("act"));
         assert_eq!(cef_field_name, expected);
 
-        let cef_field_name = cef_map.get_cef_field_for("Destination User ID");
+        let cef_field_name = cef_map.get_cef_field("Destination User ID");
         let expected = Some(String::from("duid"));
         assert_eq!(cef_field_name, expected);
 
-        let cef_field_name = cef_map.get_cef_field_for("");
+        let cef_field_name = cef_map.get_cef_field("");
         assert_eq!(cef_field_name, None);
+
+        let cef_field_name = cef_map.get_cef_field_or_default("SomeUnknownField");
+        assert_eq!(cef_field_name, "someUnknownField");
     }
 }

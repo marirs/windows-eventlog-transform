@@ -1,302 +1,179 @@
-use crate::cef::{
-    cef_map::CefMap,
-};
 use std::collections::HashMap;
 
-use convert_case::{Case, Casing};
+use crate::cef::mappers::{
+    cef_map::CefMap,
+    load_mapping, EventMappingGetters,
+};
 
 type EventData = HashMap<String, String>;
+type CefObject = HashMap<String, String>;
+
 const EMPTY_STRING: String = String::new();
 
-struct KeyVal {
-    key: String,
-    val: String,
+/// Map & convert the Events into a CEF HashMap
+pub fn mapper(event_id: &usize, evt: &EventData) -> Option<CefObject> {
+    let evt_mapping = load_mapping();
+    let map = if let Some(m) = evt_mapping.get_mapping_info(&event_id) {
+        // Found mapping information
+        m
+    }else {
+        // We dont have a mapping, so return new()
+        return None
+    };
+
+    // Load the CEF Mapping fields
+    let cef_map = CefMap::load_cef_map();
+    // Build the CEF HashMap Object
+    let result = map
+        .iter()
+        .map(|(k, v)|{
+            let xml_key = v;
+            if k.eq_ignore_ascii_case("message") {
+                // We have a message
+                if xml_key.starts_with("concatenate") {
+                    // We have a message that needs to be concatenated
+                    format!("msg={}", do_msg_concat(xml_key, &evt))
+                } else {
+                    // Normal message
+                    format!("msg={}", xml_key)
+                }
+            } else {
+                // Mapping if not a message field
+                let cef_key = cef_map.get_cef_field_or_default(&k);
+                let cef_val = if xml_key.starts_with("one_of(") {
+                    // One_Of(..) value encountered
+                    do_one_of(xml_key, &evt)
+                } else if xml_key.starts_with("all_of(") {
+                    // One_Of(..) value encountered
+                    do_all_of(xml_key, &evt)
+                } else if xml_key.starts_with("both(") {
+                    // Both(..) value encountered
+                    xml_key
+                        .split(",")
+                        .map(|x| x.replace("both (", "").replace(")", ""))
+                        .map(|x| {
+                            evt.get(&x).unwrap_or(&EMPTY_STRING).to_string()
+                        })
+                        .collect::<Vec<String>>()
+                        .join(" ")
+                } else if xml_key.starts_with("concatenate") {
+                    // Concatenate(..) values encountered
+                    String::new()
+                    // TODO: need to do the concat logic
+                } else if xml_key.contains("IPv6 Address)") {
+                    // IPv6 address mostly available
+                    let xml_fields = xml_key
+                        .splitn(2, " ")
+                        .map(|x| x.to_string())
+                        .collect::<Vec<String>>()
+                        .iter()
+                        .nth(0)
+                        .unwrap_or(&EMPTY_STRING)
+                        .to_string();
+                    let addr = if let Some(a) = evt.get(&xml_fields) {
+                        if a.contains(":") { a.to_string() } else { EMPTY_STRING }
+                    } else {
+                        EMPTY_STRING
+                    };
+                    addr
+                } else {
+                    // Common mapping
+                    if xml_key.starts_with("%") && xml_key.matches("%").count() == 1 {
+                        // Mapping that correlates to a parameter
+                        let param = "param".to_string() + xml_key.replace("%", "").as_str();
+                        evt.get(&param).unwrap_or(&EMPTY_STRING).to_string()
+                    } else {
+                        // Normal mapping
+                        evt.get(xml_key).unwrap_or(&EMPTY_STRING).to_string()
+                    }
+                };
+                // Add the device custom labels if device custom values are present
+                let label = if k.contains(" Custom ") {
+                    format!("{}Label={}", cef_key, xml_key).replace("\"", "")
+                } else { EMPTY_STRING };
+                // build the k=v cef string
+                format!("{:?}={:?}~{}", cef_key.trim(), cef_val.trim(), label.trim()).trim().to_string()
+            }
+        })
+        .map(|x|{
+            x
+                .split("~")
+                .filter(|x|!x.is_empty())
+                .map(|x|x.to_string())
+                .collect::<Vec<_>>()
+                .iter()
+                .map(|x|{
+                    let components = x
+                        .split("=")
+                        .filter(|x|!x.is_empty())
+                        .map(|x|x.to_string())
+                        .collect::<Vec<String>>();
+                    (
+                        components[0].replace("\"", ""),
+                        components[1].replace("\"", "").replace("\\\\", "\\")
+                    )
+                })
+                .collect::<CefObject>()
+        })
+        .flatten()
+        .collect::<CefObject>();
+
+    Some(result)
 }
 
-fn get_cef_key_for(english_field: &str) -> String {
-    //! Gets the CEF Key if available or camelCase of the given word(s) as a key
-    let cef_mapping = CefMap::from_mapping(include_str!("../../assets/cef_mapping.csv"));
-    cef_mapping
-        .get_cef_field_for(english_field)
-        .unwrap_or(english_field.to_case(Case::Camel))
-}
-
-fn get_key_val_for(english_field: &str, xml_field: &str, evt: EventData) -> KeyVal {
-    //! Gets a Key & Value mapping
-    //!
-    //! ## Returns
-    //! KeyVal object
-    // get the cef field name
-    let key = get_cef_key_for(english_field);
-
-    // get the field's value
-    let val = evt
-        .get(xml_field).unwrap_or(&EMPTY_STRING)
-        .to_string();
-
-    KeyVal {
-        key,
-        val
-    }
-}
-
-#[allow(non_snake_case)]
-fn get_dest_nt_domain_from_SubjectDomainName(evt: EventData) -> KeyVal {
-    //! Gets the Destination NT Domain from
-    //! Destination NT Domain & SubjectDomainName
-    get_key_val_for("Destination NT Domain", "SubjectDomainName", evt)
-}
-
-#[allow(non_snake_case)]
-fn get_dest_nt_domain_from_TargetUserDomain(evt: EventData) -> KeyVal {
-    get_key_val_for("Destination NT Domain", "TargetUserDomain", evt)
-}
-
-#[allow(non_snake_case)]
-fn get_device_nt_domain_from_SubjectDomainName(evt: EventData) -> KeyVal {
-    //! Gets the Device NT Domain from
-    //! Device NT Domain & SubjectDomainName
-    get_key_val_for("Device NT Domain", "SubjectDomainName", evt)
-}
-
-#[allow(non_snake_case)]
-fn get_device_nt_domain_from_TargetUserDomain(evt: EventData) -> KeyVal {
-    get_key_val_for("Device NT Domain", "TargetUserDomain", evt)
-}
-
-#[allow(non_snake_case)]
-fn get_dest_user_id_from_SubjectLogonId(evt: EventData) -> KeyVal {
-    //! Get `destination user id` from `SubjectLogonId`
-    get_key_val_for("Destination User ID", "SubjectLogonId", evt)
-}
-
-#[allow(non_snake_case)]
-fn get_dest_user_id_from_SubjectUserName_or_SubjectUserSid(evt: EventData) -> KeyVal {
-    //! Get `destination user id` from `one_of(SubjectUserName, SubjectUserSid)`
-    let dest_user_name_key = get_cef_key_for("Destination User ID");
-    let dest_user_name_val = one_of!(
-        evt.get("SubjectUserName").unwrap_or(&EMPTY_STRING).to_string(),
-        evt.get("SubjectUserSid").unwrap_or(&EMPTY_STRING).to_string()
-    );
-
-    KeyVal {
-        key: dest_user_name_key.to_string(),
-        val: dest_user_name_val.to_string()
-    }
-}
-
-#[allow(non_snake_case)]
-fn get_dest_username_from_SubjectLogonId(evt: EventData) -> KeyVal {
-    //! Get `destination user name` from `SubjectLogonId`
-    get_key_val_for("Destination User Name", "SubjectLogonId", evt)
-}
-
-#[allow(non_snake_case)]
-fn get_dest_username_from_SubjectUserName_or_SubjectUserSid(evt: EventData) -> KeyVal {
-    //! Get `destination user name` from `one_of(SubjectUserName, SubjectUserSid)`
-    let dest_user_name_key = get_cef_key_for("Destination User Name");
-    let dest_user_name_val = one_of!(
-        evt.get("SubjectUserName").unwrap_or(&EMPTY_STRING).to_string(),
-        evt.get("SubjectUserSid").unwrap_or(&EMPTY_STRING).to_string()
-    );
-
-    KeyVal {
-        key: dest_user_name_key.to_string(),
-        val: dest_user_name_val.to_string()
-    }
-}
-
-#[allow(non_snake_case)]
-fn get_dest_user_id_from_TargetLogonId(evt: EventData) -> KeyVal {
-    get_key_val_for(
-        "Destination User ID", "TargetLogonId", evt
-    )
-}
-
-#[allow(non_snake_case)]
-fn get_dest_username_from_TargetUserName_or_TargetUserSid(evt: EventData) -> KeyVal {
-    //! Get `destination user name` from `one_of(TargetUserName, TargetUserSid)`
-    let dest_user_name_key = get_cef_key_for("Destination User Name");
-    let dest_user_name_val = one_of!(
-        evt.get("TargetUserName").unwrap_or(&EMPTY_STRING).to_string(),
-        evt.get("TargetUserSid").unwrap_or(&EMPTY_STRING).to_string()
-    );
-
-    KeyVal {
-        key: dest_user_name_key.to_string(),
-        val: dest_user_name_val.to_string()
-    }
-}
-
-pub(crate) fn event_mappings(event_id: usize, event_data: EventData) -> String {
-    //! Map all the events with their corresponding CEF fields
-    //! ## Parameters
-    //! `event_id` as usize, `EventData` as HashMap
-    //! ## Returns
-    //! CEF String
-    match event_id {
-        104 => {
-            let channel = get_key_val_for(
-                "File Type", "Channel", event_data.clone()
-            );
-            let src_user_name = get_key_val_for(
-                "Source User Name", "SubjectUserName", event_data.clone()
-            );
-            let dest_domain_name = get_key_val_for(
-                "Destination NT Domain", "SubjectDomainName", event_data.clone()
-            );
-
-            format!(
-                "{}={} {}={} {}={}",
-                channel.key, channel.val,
-                src_user_name.key, channel.val,
-                dest_domain_name.key, dest_domain_name.val
-            )
-        },
-        1102 => {
-            let dest_nt_domain = get_dest_nt_domain_from_SubjectDomainName(event_data.clone());
-            let dest_user_id = get_dest_user_id_from_SubjectUserName_or_SubjectUserSid(event_data.clone());
-            let dest_user_name = get_dest_username_from_SubjectLogonId(event_data.clone());
-
-            format!(
-                "{}={} {}={} {}={}",
-                dest_nt_domain.key, dest_nt_domain.val,
-                dest_user_id.key, dest_user_id.val,
-                dest_user_name.key, dest_user_name.val
-            )
-        },
-        4610 => {
-            format!("cs5Label=AuthenticationPackageName cs5={}",
-                event_data.get("AuthenticationPackageName").unwrap_or(&EMPTY_STRING)
-            )
-        },
-        4611 => {
-            let src_process_name = get_key_val_for(
-                "Source Process Name", "LogonProcessName", event_data.clone()
-            );
-            let dest_process_name = get_key_val_for(
-                "Destination Process Name", "LogonProcessName", event_data.clone()
-            );
-            let dest_user_id = get_dest_user_id_from_SubjectLogonId(event_data.clone());
-            let dest_user_name = get_dest_username_from_SubjectUserName_or_SubjectUserSid(event_data.clone());
-            let dest_nt_domain = get_dest_nt_domain_from_SubjectDomainName(event_data.clone());
-            let dvc_nt_domain = get_device_nt_domain_from_SubjectDomainName(event_data.clone());
-
-            format!(
-                "{}={} {}={} {}={} {}={} {}={} {}={}",
-                src_process_name.key, src_process_name.val,
-                dest_process_name.key, dest_process_name.val,
-                dest_user_id.key, dest_user_id.val,
-                dest_user_name.key, dest_user_name.val,
-                dest_nt_domain.key, dest_nt_domain.val,
-                dvc_nt_domain.key, dvc_nt_domain.val
-            )
-        },
-        4612 => {
-            format!("cn3Label=AuditsDiscarded cn3={} msg={}",
-                event_data.get("AuditsDiscarded").unwrap_or(&EMPTY_STRING),
-                "This event is generated when audit queues are filled and events must be discarded. This most commonly occurs when security events are being generated faster than they are being written to disk, or when the auditing system loses connectivity to the event log, such as when the event log service is stopped."
-            )
-        },
-        4614 => {
-            format!("cs5Label=NotificationPackageName cs5={}",
-                event_data.get("NotificationPackageName").unwrap_or(&EMPTY_STRING)
-            )
-        },
-        4615 => {
-            // cef key
-            let dest_user_id = get_dest_user_id_from_SubjectLogonId(event_data.clone());
-            let dest_user_name = get_dest_username_from_SubjectUserName_or_SubjectUserSid(event_data.clone());
-            let dest_nt_domain = get_dest_nt_domain_from_SubjectDomainName(event_data.clone());
-            let dvc_nt_domain = get_device_nt_domain_from_SubjectDomainName(event_data.clone());
-
-            format!(
-                "msg={} {}={} {}={} {}={} {}={}",
-                "Windows Local Security Authority (LSA) communicates with the Windows kernel using Local Procedure Call (LPC) ports. If you see this event, an application has inadvertently or intentionally accessed this port which is reserved exclusively for LSA's use. The application (process) should be investigated to ensure that it is not attempting to tamper with this communications channel.",
-                dest_user_id.key, dest_user_id.val,
-                dest_user_name.key, dest_user_name.val,
-                dest_nt_domain.key, dest_nt_domain.val,
-                dvc_nt_domain.key, dvc_nt_domain.val
-            )
-        },
-        4616 => {
-            let dest_user_id = get_dest_user_id_from_SubjectLogonId(event_data.clone());
-            let dest_user_name = get_dest_username_from_SubjectUserName_or_SubjectUserSid(event_data.clone());
-            let dest_nt_domain = get_dest_nt_domain_from_SubjectDomainName(event_data.clone());
-            let dvc_nt_domain = get_device_nt_domain_from_SubjectDomainName(event_data.clone());
-            let dest_proc_name = get_key_val_for(
-                "Destination process Name", "ProcessName", event_data.clone()
-            );
-            let cs3 = get_key_val_for(
-                "Device Custom String 3", "ProcessId", event_data.clone()
-            );
-
-            format!(
-                "msg={} {}={} {}={} {}={} {}={} {}={} cs3Label=ProcessId {}={}",
-                "This event is generated when the system time is changed. It is normal for the Windows Time Service, which runs with System privilege, to change the system time on a regular basis. Other system time changes may be indicative of attempts to tamper with the computer.",
-                dest_user_id.key, dest_user_id.val,
-                dest_user_name.key, dest_user_name.val,
-                dest_nt_domain.key, dest_nt_domain.val,
-                dvc_nt_domain.key, dvc_nt_domain.val,
-                dest_proc_name.key, dest_proc_name.val,
-                cs3.key, cs3.val
-            )
-        },
-        4618 => {
-            let dest_user_id = get_dest_user_id_from_TargetLogonId(event_data.clone());
-            let dest_username = get_dest_username_from_TargetUserName_or_TargetUserSid(event_data.clone());
-            let dest_nt_domain = get_dest_nt_domain_from_TargetUserDomain(event_data.clone());
-            let dvc_nt_domain = get_device_nt_domain_from_TargetUserDomain(event_data.clone());
-
-            format!(
-                "msg={} {}={} {}={} {}={} {}={}",
-                "This event is generated when Windows is configured to generate alerts in accordance with the Common Criteria Security Audit Analysis requirements (FAU_SAA) and an auditable event pattern occurs.",
-                dest_user_id.key, dest_user_id.val,
-                dest_username.key, dest_username.val,
-                dest_nt_domain.key, dest_nt_domain.val,
-                dvc_nt_domain.key, dvc_nt_domain.val
-            )
-        },
-        4621 => {
-            format!("cn2Label=CrashOnAuditFail cn2Label=CrashOnAuditFail cn2={} msg={}",
-                event_data.get("CrashOnAuditFail").unwrap_or(&EMPTY_STRING),
-                "This event is logged after a system reboots following CarshOnAuditFail."
-            )
-        },
-        4622 => {
-            format!("{}={}",
-                get_cef_key_for("File Path"),
-                event_data.get("SecurityPackageName").unwrap_or(&EMPTY_STRING)
-            )
-        },
-        4624 => {
-            let device_nt_domain = get_device_nt_domain_from_SubjectDomainName(event_data.clone());
-            let src_address = get_key_val_for(
-                "Source Address", "IpAddress", event_data.clone()
-            );
-            let dest_proc_name = get_key_val_for(
-                "Destination Process Name", "ProcessName", event_data.clone()
-            );
-
-            let src_hostname_key = get_cef_key_for("Source Host Name");
-            let src_hostname_val = one_of!(
-                event_data.get("IpAddress").unwrap_or(&EMPTY_STRING).to_string(),
+/// Lookup into the Values of the given XML Keys and return one of the Values
+fn do_one_of(xml_key: &String, event_data: &EventData) -> String {
+    let xml_fields = xml_key
+        .split(",")
+        .map(|x| x.replace("one_of(", "").replace(")", ""))
+        .map(|x| {
+            // Get the XML Value(s) from the XML Key(s)
+            if x == "localhost" {
                 "localhost".to_string()
-            );
+            } else if x == "No" {
+                "No".to_string()
+            } else if x == "Blocked" {
+                "Blocked".to_string()
+            } else {
+                event_data.get(&x).unwrap_or(&EMPTY_STRING).to_string()
+            }
+        })
+        .collect::<Vec<String>>()
+        .join(",");
+    one_of!(xml_fields)
+}
 
-            // TODO: device custom string & additional data & Device Custom IPv6 Address 2
-            format!(
-                "msg={} cs3Label=TargetOutboundUserName cs3={} cs4Label=TargetOutboundDomainName cs4={} \
-                {}={} {}={} {}={} {}={}",
-                "This event is generated when a logon session is created. It is generated on the computer that was accessed.",
-                event_data.get("TargetOutboundUserName").unwrap_or(&EMPTY_STRING),
-                event_data.get("TargetOutboundDomainName").unwrap_or(&EMPTY_STRING),
-                device_nt_domain.key, device_nt_domain.val,
-                src_address.key, src_address.val,
-                dest_proc_name.key, dest_proc_name.val,
-                src_hostname_key, src_hostname_val,
-            )
-        },
-        _ => "".to_string()
-    }
+/// Lookup into the Values of the given XML Keys and return all of the Values
+fn do_all_of(xml_key: &String, event_data: &EventData) -> String {
+    let xml_fields = xml_key
+        .split(",")
+        .map(|x| x.replace("one_of(", "").replace(")", ""))
+        .map(|x| {
+            // Get the XML Value(s) from the XML Key(s)
+            event_data.get(&x).unwrap_or(&EMPTY_STRING).to_string()
+        })
+        .collect::<Vec<String>>()
+        .join(",");
+    all_of!(xml_fields)
+}
+
+/// Lookup into the Values of the given XML Keys and return a concat message
+fn do_msg_concat(xml_key: &String, event_data: &EventData) -> String {
+    let msg = xml_key
+        .split(",")
+        .map(|x|{
+            let x = x
+                .replace("concatenate(", "")
+                .replace(")", "");
+            if x.starts_with("%") {
+                let param = "param".to_string() + x.replace("%", "").as_str();
+                event_data.get(&param).unwrap_or(&EMPTY_STRING).trim().to_string()
+            } else {
+                x
+            }
+        })
+        .collect::<Vec<_>>()
+        .join("")
+        .replace("\"", "");
+    msg
 }

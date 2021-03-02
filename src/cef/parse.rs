@@ -62,14 +62,16 @@ pub(crate) fn get_event_data(event_id: usize, event_data: EventData) -> String {
             .collect::<HashMap<String, String>>();
 
         // convert to cef string
-        let parsed_cef = properties::event_mappings(event_id, obj.clone());
+        let parsed_cef = properties::mapper(&event_id, &obj);
+        println!("{:#?}", parsed_cef);
+        // let parsed_cef = properties::event_mappings(event_id, obj.clone());
         // TODO: remaining fields to key=val conversion
         // let cef = obj
         //     .iter()
         //     .map(|(k, v)| format!("{}={}", k, v))
         //     .collect::<Vec<String>>()
         //     .join(" ");
-        result = format!("{} cs6Label=EventData cs6=", parsed_cef);
+        // result = format!("{} cs6Label=EventData cs6=", parsed_cef);
     }
 
     if !binary_data.is_empty() && !result.is_empty() {

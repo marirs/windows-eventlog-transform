@@ -1,9 +1,8 @@
 mod de;
 use de::Event;
 
-mod mappings;
-
 mod cef;
+pub use cef::ToCEF;
 
 use quick_xml::de::from_str;
 
@@ -17,7 +16,6 @@ use std::{
 ///
 /// ## Example usage
 /// ```rust
-/// let xml_string = r#""#;
 /// let e = winevents_xml_transform::from_file("data/winevt1.xml").unwrap();
 /// println!("{:#?}", e);
 /// ```
@@ -75,10 +73,6 @@ pub fn from_string(xml_string: String) -> Result<Event, String> {
     };
 
     Ok(result)
-}
-
-pub trait ToCEF {
-    fn to_cef(&self) -> String;
 }
 
 #[cfg(test)]
