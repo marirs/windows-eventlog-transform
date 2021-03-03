@@ -22,6 +22,8 @@ pub struct WinEvent {
     sub_category: String,
     /// Possible outcome of the Event
     outcome: String,
+    /// Channel
+    channel: String,
     /// Name of the Event
     name: String,
     /// Mapping information of the Event
@@ -47,6 +49,7 @@ pub fn load_mapping() -> EventMapping {
             let category = fields.next().unwrap().to_string();
             let sub_category = fields.next().unwrap().to_string();
             let outcome = fields.next().unwrap().to_string();
+            let channel = fields.next().unwrap().to_string();
             let name = fields.next().unwrap().to_string();
             let mapping_info = fields
                 .map(|x| {
@@ -61,6 +64,7 @@ pub fn load_mapping() -> EventMapping {
                 category,
                 sub_category,
                 outcome,
+                channel,
                 name,
                 mapping_info: if mapping_info.is_empty() { None } else { Some(mapping_info) },
             };
@@ -73,6 +77,7 @@ pub trait EventMappingGetters {
     fn get_info(&self, event_id: &usize) -> Option<&WinEvent>;
     fn get_mapping_info(&self, event_id: &usize) -> Option<&HashMap<String, String>>;
     fn get_name(&self, event_id: &usize) -> Option<&String>;
+    fn get_channel(&self, event_id: &usize) -> Option<&String>;
     fn get_category(&self, event_id: &usize) -> Option<&String>;
     fn get_sub_category(&self, event_id: &usize) -> Option<&String>;
     fn get_outcome(&self, event_id: &usize) -> Option<&String>;
@@ -99,6 +104,11 @@ impl EventMappingGetters for EventMapping {
     fn get_name(&self, event_id: &usize) -> Option<&String> {
         //! Get the Name of the Event
         self.get(event_id).map(|x| &x.name)
+    }
+
+    fn get_channel(&self, event_id: &usize) -> Option<&String> {
+        //! Get the Channel/Provider Source of the Event
+        self.get(event_id).map(|x| &x.channel)
     }
 
     fn get_category(&self, event_id: &usize) -> Option<&String> {
@@ -129,5 +139,6 @@ mod tests {
         let event_name = event_name.unwrap();
         assert_eq!(event_name.name, "A security-disabled universal group was changed.".to_string());
         assert!(event_name.mapping_info.is_some());
+        assert_eq!(event_name.channel, "Security")
     }
 }
