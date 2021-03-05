@@ -41,8 +41,12 @@ pub fn mapper(event_id: &usize, evt: &EventData) -> Option<CefObject> {
                     format!("msg={}", xml_key)
                 }
             } else if k.eq_ignore_ascii_case("device action"){
-                    // Got a Device Action Message
-
+                // Got a Device Action Message
+                if xml_key.matches(" ").count() > 0 {
+                    format!("act={}", xml_key)
+                } else {
+                    format!("act={}", evt.get(xml_key).unwrap_or(&EMPTY_STRING).to_string())
+                }
             } else {
                 // Mapping if not a message field
                 let cef_key = cef_map.get_cef_field_or_default(&k);
