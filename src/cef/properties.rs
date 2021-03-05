@@ -33,10 +33,16 @@ pub fn mapper(event_id: &usize, evt: &EventData) -> Option<CefObject> {
                 if xml_key.starts_with("concatenate") {
                     // We have a message that needs to be concatenated
                     format!("msg={}", do_msg_concat(xml_key, &evt))
+                } else if xml_key.eq_ignore_ascii_case("all_of_data") {
+                    // All_Of_Data found for message
+                    format!("msg={}", do_all_of_data(&evt))
                 } else {
                     // Normal message
                     format!("msg={}", xml_key)
                 }
+            } else if k.eq_ignore_ascii_case("device action"){
+                    // Got a Device Action Message
+
             } else {
                 // Mapping if not a message field
                 let cef_key = cef_map.get_cef_field_or_default(&k);
@@ -155,6 +161,19 @@ fn do_all_of(xml_key: &String, event_data: &EventData) -> String {
         .collect::<Vec<String>>()
         .join(",");
     all_of!(xml_fields)
+}
+
+/// Concat all Data params into K:V String
+fn do_all_of_data(event_data: &EventData) -> String {
+    event_data
+        .iter()
+        .filter(|(_k, v)| !v.is_empty())
+        .map(|(k, v)|{
+            format!("{}: {}", k, v)
+        })
+        .collect::<Vec<String>>()
+        .join("\n")
+        .replace("\"", "")
 }
 
 /// Lookup into the Values of the given XML Keys and return a concat message

@@ -6,6 +6,9 @@
 1104,System,System Integrity,Success,System,The security Log is now full
 1105,System,Other System Events,Success,System,Event log automatic backup,File Type:Channel,File Name:BackupPath
 1108,System,Other System Events,Failure,System,The event logging service encountered an error
+1150,Defender,Endpoint protection,Success,Microsoft-Windows-Windows Defender/Operational,Endpoint Protection client is up and running in a healthy state.,Device Action:No action is necessary. The Microsoft Defender Antivirus client is in a healthy state. This event is reported on an hourly basis.,Message:all_of_data
+1151,Defender,Endpoint protection,-,Microsoft-Windows-Windows Defender/Operational,Endpoint Protection client health report (time in UTC),Message:all_of_data
+2050,Defender,Endpoint protection,Success,Microsoft-Windows-Windows Defender/Operational,Microsoft Defender Antivirus has uploaded a file for further analysis.,File Path:Filename,File Hash:Sha256
 4608,System,Security State Change,Success,Security,Windows is starting up.
 4609,System,Security State Change,Success,Security,Windows is shutting down.
 4610,System,Security System Extension,Success,Security,"An authentication package has been loaded by the Local Security Authority.

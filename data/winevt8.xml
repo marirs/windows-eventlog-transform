@@ -1,0 +1,45 @@
+<Event xmlns="http://schemas.microsoft.com/win/2004/08/events/event">
+<System>
+    <Provider Name="Microsoft-Windows-Windows Defender" Guid="{11cd958a-c507-4ef3-b3f2-5fd9dfbd2c78}" />
+    <EventID>1151</EventID>
+    <Version>0</Version>
+    <Level>4</Level>
+    <Task>0</Task>
+    <Opcode>0</Opcode>
+    <Keywords>0x8000000000000000</Keywords>
+    <TimeCreated SystemTime="2021-03-03T03:38:37.8613001Z" />
+    <EventRecordID>78</EventRecordID>
+    <Correlation />
+    <Execution ProcessID="2456" ThreadID="3368" />
+    <Channel>Microsoft-Windows-Windows Defender/Operational</Channel>
+    <Computer>DESKTOP-LAJA961</Computer>
+    <Security UserID="S-1-5-18" />
+</System>
+<EventData>
+    <Data Name="Product Name">Microsoft Defender Antivirus</Data>
+    <Data Name="Platform version">4.18.2101.9</Data>
+    <Data Name="Unused" />
+    <Data Name="Engine version">1.1.17800.5</Data>
+    <Data Name="NRI engine version">1.1.17800.5</Data>
+    <Data Name="AV security intelligence version">1.331.2227.0</Data>
+    <Data Name="AS security intelligence version">1.331.2227.0</Data>
+    <Data Name="NRI security intelligence version">1.331.2227.0</Data>
+    <Data Name="RTP state">Enabled</Data>
+    <Data Name="OA state">Enabled</Data>
+    <Data Name="IOAV state">Enabled</Data>
+    <Data Name="BM state">Enabled</Data>
+    <Data Name="Last AV security intelligence age">0</Data>
+    <Data Name="Last AS security intelligence age">0</Data>
+    <Data Name="Last quick scan age">1</Data>
+    <Data Name="Last full scan age">4294967295</Data>
+    <Data Name="AV security intelligence creation time">02/03/2021 21:29:46</Data>
+    <Data Name="AS security intelligence creation time">02/03/2021 21:29:45</Data>
+    <Data Name="Last quick scan start time">01/03/2021 10:51:48</Data>
+    <Data Name="Last quick scan end time">01/03/2021 10:52:28</Data>
+    <Data Name="Last quick scan source">2</Data>
+    <Data Name="Last full scan start time">01/01/1601 00:00:00</Data>
+    <Data Name="Last full scan end time">01/01/1601 00:00:00</Data>
+    <Data Name="Last full scan source">0</Data>
+    <Data Name="Product status">0x00080000</Data>
+</EventData>
+</Event>
