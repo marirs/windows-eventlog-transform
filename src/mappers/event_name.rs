@@ -2,7 +2,7 @@ use serde::{Deserialize, Deserializer};
 
 use crate::{
     de::EventInfo,
-    cef::mappers::*,
+    mappers::*,
 };
 
 fn get_event_name_mapping(event_id: usize) -> String {

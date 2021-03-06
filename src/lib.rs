@@ -4,6 +4,8 @@ use de::Event;
 mod cef;
 pub use cef::ToCEF;
 
+mod mappers;
+
 use quick_xml::de::from_str;
 
 use std::{

@@ -49,7 +49,7 @@ impl CefMap {
         //! ```ignore
         //! let cef_map = CefMap::load_cef_map();
         //! ```
-        let text = include_str!("../../../assets/cef_mapping.csv").trim();
+        let text = include_str!("../../assets/cef_mapping.csv").trim();
         let map = Self::populate_map(text.to_string());
         let inverted_map = Self::populate_inverted_map(&map);
         Self { map, inverted_map }

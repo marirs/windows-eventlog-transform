@@ -5,11 +5,11 @@ pub(crate) fn level_map<'de, D>(deserializer: D) -> Result<String, D::Error>
         D: Deserializer<'de>,
 {
     usize::deserialize(deserializer).map(|x| {
-        from_usize_to_string(x)
+        from_usize_to_string(&x)
     })
 }
 
-pub(crate) fn from_usize_to_string(level: usize) -> String {
+pub(crate) fn from_usize_to_string(level: &usize) -> String {
     let ustr = level.to_string();
     match level {
         0 | 4 => "Information",
@@ -22,7 +22,7 @@ pub(crate) fn from_usize_to_string(level: usize) -> String {
         .into()
 }
 
-pub(crate) fn from_string_to_usize(level: String) -> usize {
+pub(crate) fn from_string_to_usize(level: &String) -> usize {
     match level.as_str() {
         "Information" => 2,
         "Critical" => 10,

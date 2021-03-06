@@ -6,11 +6,15 @@ use serde::{Deserialize, Deserializer, Serialize};
 use serde_json::{json, Value};
 use serde_with::skip_serializing_none;
 
-use crate::cef::mappers::event_name::eventid_map;
-use crate::cef::mappers::keywords::keywords_map;
-use crate::cef::mappers::levels::level_map;
-use crate::cef::mappers::opcode::opcode_map;
-use crate::cef::mappers::tasks::tasks_map;
+use crate::{
+    mappers::{
+        event_name::eventid_map,
+        keywords::keywords_map,
+        levels::level_map,
+        opcode::opcode_map,
+        tasks::tasks_map,
+    }
+};
 
 #[skip_serializing_none]
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -24,6 +28,8 @@ pub struct Event {
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct System {
     pub Provider: Option<Provider>,
+    #[serde(default = "default_device_vendor")]
+    pub DeviceVendor: String,
     pub EventRecordID: usize,
     #[serde(alias = "EventID", deserialize_with = "eventid_map")]
     pub Event: EventInfo,
@@ -145,4 +151,8 @@ fn flatten_time_created<'de, D>(deserializer: D) -> Result<String, D::Error>
         D: Deserializer<'de>,
 {
     TimeCreated::deserialize(deserializer).map(|x| x.SystemTime)
+}
+
+fn default_device_vendor() -> String {
+    "Microsoft".to_string()
 }

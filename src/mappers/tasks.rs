@@ -27,7 +27,7 @@ fn get_map(
 }
 
 fn get_sa_tasks_mapping(task_id: usize) -> String {
-    let tasks = include_str!("../../../assets/tasks.csv").trim();
+    let tasks = include_str!("../../assets/tasks.csv").trim();
     let tasks_map: HashMap<usize, String> = get_map(
         tasks, '\n', ',', (1,2)
     );

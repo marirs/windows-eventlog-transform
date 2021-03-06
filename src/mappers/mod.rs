@@ -32,7 +32,7 @@ pub struct WinEvent {
 
 pub fn load_mapping() -> EventMapping {
     //! Loads a default Windows EventLog Native Mappings Config
-    let event_mapping = include_str!("../../../assets/event_mappings.csv");
+    let event_mapping = include_str!("../../assets/event_mappings.csv");
     ReaderBuilder::new()
         .flexible(true)
         .has_headers(false)
@@ -129,7 +129,7 @@ impl EventMappingGetters for EventMapping {
 
 #[cfg(test)]
 mod tests {
-    use crate::cef::mappers::{load_mapping, EventMappingGetters};
+    use crate::mappers::{load_mapping, EventMappingGetters};
 
     #[test]
     fn test_mappings() {
